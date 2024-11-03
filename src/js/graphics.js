@@ -50,6 +50,14 @@ function createCanvasSprite(name, vector) {
                             logWarningNoLine("include object '" + value + "' not found");
                         }
                     } else if (context[key] instanceof Function) {
+                        if ('length' in value) {
+                            for (let i = 0; i < value.length; i++) {
+                                if (value[i] == 'test_png') {
+                                    console.log('swappin!!!', window.test_png);
+                                    value[i] = window.test_png;
+                                }
+                            }
+                        }
                         context[key].apply(context, value);
                     } else {
                         context[key] = value;

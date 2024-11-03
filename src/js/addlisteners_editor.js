@@ -45,7 +45,14 @@ var verticalDragbar = document.getElementById("verticaldragbar");
 verticalDragbar.addEventListener("mousedown", verticalDragbarMouseDown, false);
 
 window.addEventListener("resize", resize_all, false);
-window.addEventListener("load", reset_panels, false);
+// window.addEventListener("load", reset_panels, false);
+window.addEventListener("load", () => {
+  window.test_png = new Image();
+  test_png.src = 'test.png';
+  console.log('test_png:', test_png);
+
+  test_png.onload = reset_panels;
+}, false);
 
 /* https://github.com/ndrake/PuzzleScript/commit/de4ac2a38865b74e66c1d711a25f0691079a290d */
 window.onbeforeunload = function (e) {
