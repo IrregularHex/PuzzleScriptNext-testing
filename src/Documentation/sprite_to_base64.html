@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" type="image/x-icon" href="ico/favicon.ico" />
+
+    <title>PuzzleScript Documentation</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/bootstrap-theme.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="../../assets/js/html5shiv.js"></script>
+      <script src="../../assets/js/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- For Sprite to Base64 Tool-->
+    <style>
+      textarea {
+          font-family: monospace;
+      }
+      input {
+          width: 30px;
+      }
+      #statusBox {
+          color: red;
+      }
+      button {
+          height:30px;
+      }
+      textarea {
+      }
+      #drop_zone {
+          border: 5px solid blue;
+          width: 100px;
+          height: 100px;
+      }
+      #preview {
+          width: 100px;
+          height: 100px;
+      }
+  </style>
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html"><img src="../images/mascot_colorful.png">Puzzlescript Next</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+              <li><a href="../editor.html">Make A Game</a></li>
+              
+              <li class="active"><a href="documentation.html">Documentation</a></li>
+          </ul>          
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://discord.gg/3uumegUV7y">Discord</a></li>            
+            <li><a href="https://groups.google.com/g/puzzlescript">Forum</a></li>
+            <li><a href="https://github.com/david-pfx/PuzzleScriptNext">GitHub</a></li>
+            <li><a href="about.html">About</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container">
+<p>
+<ol class="breadcrumb">
+  <li><a href="documentation.html">Documentation</a></li>
+  <li class="active">Sprite to base64 tool</li>
+</ol>
+<p>
+
+<h1>Sprite to Base64 Tool <img src="../images/mascot_32.png"></h1>
+<br>
+So you want to...
+<p></p>
+<div>
+<div id="drop_zone">Drag & drop here</div>
+<div><img id="preview" class="preview"></div>
+</div>
+<button onclick="copy()">Copy to clipboard</button>&nbsp;
+<button onclick="clean()">Clear</button>&nbsp;
+    <br>
+    <textarea id="textBox" rows="20" cols="120" placeholder=""></textarea>
+    <p></p>
+    <b><div id="statusBox"></div></b>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", HtmlLoaded);
+
+        function HtmlLoaded() {
+            textBox = document.getElementById("textBox");
+            statusBox = document.getElementById("statusBox");
+
+            var drop_zone = document.querySelector("#drop_zone");
+            var preview = document.querySelector("#preview");
+            
+            drop_zone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+            });
+            drop_zone.addEventListener("drop", async (e) => {
+                e.preventDefault();
+                clean();
+                if (e.dataTransfer.items.length === 0) {
+                    error("ERROR: Dropped 0 items.");
+                    return;
+                }
+                const item = e.dataTransfer.items[0];
+                if (item.kind !== "file") {
+                    error("ERROR: Expected a file but got a " + item.kind);
+                    return;
+                }
+                const file = item.getAsFile();
+                if (!file) {
+                    error("Couldn't get file.");
+                    return;
+                }
+                const url = URL.createObjectURL(file);
+                preview.src = url;
+                try {
+                    const image = new Image();
+                    image.crossOrigin = 'Anonymous';
+                    image.src = url;
+                    error("Loading image...");
+                    await image.decode();
+                    error("Rendering image...");
+                    const canvas = document.createElement('canvas');
+                    canvas.height = image.width;
+                    canvas.width = image.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(image, 0, 0);
+                    const dataURL = canvas.toDataURL();
+                    console.log(dataURL);
+                    output(dataURL);
+                } catch (e) {
+                    error("Error while rendering image: " + e);
+                    return;
+                }
+                error("Done!");
+            });
+        }
+
+        function clean() {
+            textBox.value = "";
+            error("Canvas cleared.")
+        }
+
+        function error(str) {
+            statusBox.innerHTML = str;
+        }
+
+        function output(val) {
+            if (val != textBox.value) {
+                textBox.value = val;
+                error("");
+            }
+        }
+
+        //Obtained from https://stackoverflow.com/a/30810322
+        function copy() {
+            if (!navigator.clipboard) {
+                error("ERROR: Could not copy to clipboard.")
+                return;
+            }
+            var text = textBox.value;
+            navigator.clipboard.writeText(text).then(function() {
+                error("Copied to clipboard!");
+            }, function(err) {
+                error("ERROR: Could not copy to clipboard. "+err);
+            });
+        }
+    </script>
+
+    </div><!-- /.container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>

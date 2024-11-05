@@ -161,6 +161,7 @@ function generateTitleScreen(hoverLine, scrollIncrement, selectLine) {
 	if (debugSwitch.includes('menu')) console.log(`generateTitleScreen()`, hoverLine, scrollIncrement, selectLine);
 	lineColorOverride = [];
   	tryLoadCustomFont();
+	tryLoadImages();
 
 	titleMode=showContinueOptionOnTitleScreen()?1:0;
 
@@ -796,6 +797,7 @@ var objectSprites = [
 ];
 
 loadedCustomFont = false;
+loadedImages = false;
 
 function tryLoadCustomFont() {
 	if(state == null || state.metadata == null || state.metadata.custom_font == undefined || loadedCustomFont) {
@@ -811,6 +813,22 @@ function tryLoadCustomFont() {
 }
 
 tryLoadCustomFont();
+
+function tryLoadImages() {
+	if(state == null || state.metadata == null || state.metadata.load_image == undefined || loadedImages) {
+		return;
+	}
+
+	var image = new Image();
+	image.src = state.metadata.load_image;
+	image.crossOrigin = 'Anonymous';
+	image.onload = (function() {
+		loadedImages = true;
+		forceRegenImages = true;
+		canvasResize();
+	});
+	window.g_image = image;
+}
 
 generateTitleScreen();
 if (titleMode>0){
@@ -967,6 +985,8 @@ function setGameState(_state, command, randomseed) {
 		    quittingMessageScreen=false;
 		    quittingTitleScreen=false;
 			titleMode = showContinueOptionOnTitleScreen() ? 1 : 0;
+
+			tryLoadImages();
 
 			if (state.metadata.skip_title_screen!==undefined) {
 				consolePrint("skip_title_screen enabled, proceeding to do exactly as it says on the tin.")

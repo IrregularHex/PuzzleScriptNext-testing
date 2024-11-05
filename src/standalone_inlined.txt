@@ -6842,6 +6842,10 @@ function createCanvasSprite(name, vector) {
                             logWarningNoLine("include object '" + value + "' not found");
                         }
                     } else if (context[key] instanceof Function) {
+                        if (key === 'drawImage') {
+                            console.log('holy hell it\'s an image');
+                            value[0] = window.g_image;
+                        }
                         if ('length' in value) {
                             for (let i = 0; i < value.length; i++) {
                                 if (value[i] == 'test_png') {
@@ -8171,6 +8175,7 @@ function generateTitleScreen(hoverLine, scrollIncrement, selectLine) {
 	if (debugSwitch.includes('menu')) console.log(`generateTitleScreen()`, hoverLine, scrollIncrement, selectLine);
 	lineColorOverride = [];
   	tryLoadCustomFont();
+	tryLoadImages();
 
 	titleMode=showContinueOptionOnTitleScreen()?1:0;
 
@@ -8806,6 +8811,7 @@ var objectSprites = [
 ];
 
 loadedCustomFont = false;
+loadedImages = false;
 
 function tryLoadCustomFont() {
 	if(state == null || state.metadata == null || state.metadata.custom_font == undefined || loadedCustomFont) {
@@ -8821,6 +8827,29 @@ function tryLoadCustomFont() {
 }
 
 tryLoadCustomFont();
+
+function tryLoadImages() {
+	if(state == null || state.metadata == null || state.metadata.load_image == undefined || loadedImages) {
+		return;
+	}
+
+	var image = new Image();
+	image.src = state.metadata.load_image;
+	image.crossOrigin = 'Anonymous';
+	image.onload = (function() {
+		loadedImages = true;
+		forceRegenImages = true;
+		canvasResize();
+	});
+	window.g_image = image;
+
+	// var custom_font = new FontFace('PuzzleCustomFont', 'url('+state.metadata.custom_font+')');
+	// custom_font.load().then(function(loaded_face) {
+	// 	document.fonts.add(loaded_face);
+	// 	loadedCustomFont = true;
+	// 	canvasResize();
+	// }).catch(function(error) {alert("Unable to load font!");});
+}
 
 generateTitleScreen();
 if (titleMode>0){
@@ -8977,6 +9006,8 @@ function setGameState(_state, command, randomseed) {
 		    quittingMessageScreen=false;
 		    quittingTitleScreen=false;
 			titleMode = showContinueOptionOnTitleScreen() ? 1 : 0;
+
+			tryLoadImages();
 
 			if (state.metadata.skip_title_screen!==undefined) {
 				consolePrint("skip_title_screen enabled, proceeding to do exactly as it says on the tin.")
@@ -12155,7 +12186,7 @@ var codeMirrorFn = function() {
         'mouse_clicks', 'noaction', 'nokeyboard', 'norepeat_action', 'norestart', 'noundo', 'require_player_movement', 
         'run_rules_on_level_start', 'runtime_metadata_twiddling', 'runtime_metadata_twiddling_debug', 'scanline', 
         'skip_title_screen', 'smoothscreen_debug', 'status_line', 'throttle_movement', 'verbose_logging'];
-    const prelude_param_text = ['title', 'author', 'homepage', 'custom_font', 'text_controls', 'text_message_continue', 'debug_switch'];
+    const prelude_param_text = ['title', 'author', 'homepage', 'custom_font', 'text_controls', 'text_message_continue', 'debug_switch', 'load_image'];
     const prelude_param_number = ['again_interval', 'animate_interval', 'font_size', 'key_repeat_interval', 
         'level_select_unlocked_ahead', 'level_select_unlocked_rollover', 'local_radius', 'realtime_interval', 
         'tween_length', 'tween_snap'];
@@ -12558,6 +12589,13 @@ var codeMirrorFn = function() {
                 logWarning(`Setting "${errorCase(ident)}" is an experimental Pattern:Script feature. Do not use.`,state.lineNumber);
                 return;
             }
+            // else if (ident == 'load_image') {
+            //     var image = new Image();
+            //     image.src = value[1];
+            //     image.crossOrigin = 'Anonymous';
+            //     image.onload = canvasResize;
+            //     window.g_image = image;
+            // }
             state.metadata.push(...value);
         }
     }
@@ -20494,7 +20532,6 @@ function Animatable(key, increment, update) {
 <script>
 window.test_png = new Image();
 test_png.src = 'test.png';
-console.log('test_png:', test_png);
 
 test_png.onload = () => {
   const sourceCode="__GAMEDAT__";

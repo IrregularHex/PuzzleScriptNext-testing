@@ -212,7 +212,7 @@ var codeMirrorFn = function() {
         'mouse_clicks', 'noaction', 'nokeyboard', 'norepeat_action', 'norestart', 'noundo', 'require_player_movement', 
         'run_rules_on_level_start', 'runtime_metadata_twiddling', 'runtime_metadata_twiddling_debug', 'scanline', 
         'skip_title_screen', 'smoothscreen_debug', 'status_line', 'throttle_movement', 'verbose_logging'];
-    const prelude_param_text = ['title', 'author', 'homepage', 'custom_font', 'text_controls', 'text_message_continue', 'debug_switch'];
+    const prelude_param_text = ['title', 'author', 'homepage', 'custom_font', 'text_controls', 'text_message_continue', 'debug_switch', 'load_image'];
     const prelude_param_number = ['again_interval', 'animate_interval', 'font_size', 'key_repeat_interval', 
         'level_select_unlocked_ahead', 'level_select_unlocked_rollover', 'local_radius', 'realtime_interval', 
         'tween_length', 'tween_snap'];
@@ -615,6 +615,13 @@ var codeMirrorFn = function() {
                 logWarning(`Setting "${errorCase(ident)}" is an experimental Pattern:Script feature. Do not use.`,state.lineNumber);
                 return;
             }
+            // else if (ident == 'load_image') {
+            //     var image = new Image();
+            //     image.src = value[1];
+            //     image.crossOrigin = 'Anonymous';
+            //     image.onload = canvasResize;
+            //     window.g_image = image;
+            // }
             state.metadata.push(...value);
         }
     }
