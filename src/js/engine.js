@@ -161,7 +161,6 @@ function generateTitleScreen(hoverLine, scrollIncrement, selectLine) {
 	if (debugSwitch.includes('menu')) console.log(`generateTitleScreen()`, hoverLine, scrollIncrement, selectLine);
 	lineColorOverride = [];
   	tryLoadCustomFont();
-	tryLoadImages();
 
 	titleMode=showContinueOptionOnTitleScreen()?1:0;
 
@@ -798,6 +797,7 @@ var objectSprites = [
 
 loadedCustomFont = false;
 loadedImages = false;
+customImages = {};
 
 function tryLoadCustomFont() {
 	if(state == null || state.metadata == null || state.metadata.custom_font == undefined || loadedCustomFont) {
@@ -815,19 +815,32 @@ function tryLoadCustomFont() {
 tryLoadCustomFont();
 
 function tryLoadImages() {
-	if(state == null || state.metadata == null || state.metadata.load_image == undefined || loadedImages) {
+	if(state == null || state.metadata == null || state.metadata.load_images == undefined /*|| loadedImages*/) {
 		return;
 	}
 
-	var image = new Image();
-	image.src = state.metadata.load_image;
-	image.crossOrigin = 'Anonymous';
-	image.onload = (function() {
-		loadedImages = true;
-		forceRegenImages = true;
-		canvasResize();
+	customImages = {};
+
+	const imagesToLoad = state.metadata.load_images.split(' ');
+
+	imagesToLoad.forEach((arg) => {
+		let [name, src] = arg.split(/=(.*)/s)
+		if (verbose_logging) {
+			consolePrint(`Loading image '${name}' from '${src}'`);
+		}
+		var image = new Image();
+		image.crossOrigin = 'Anonymous';
+		image.src = src;
+		image.onload = (function() {
+			if (verbose_logging) {
+				consolePrint(`Image '${name}' finished loading.`, true);
+			}
+			loadedImages = true; // TODO broken
+			forceRegenImages = true;
+			canvasResize();
+		});
+		customImages[name] = image;
 	});
-	window.g_image = image;
 }
 
 generateTitleScreen();
@@ -1006,7 +1019,7 @@ function setGameState(_state, command, randomseed) {
 		}
 		case "rebuild":
 		{
-			//do nothing
+			tryLoadImages();
 			break;
 		}
 		case "loadFirstNonMessageLevel":{
