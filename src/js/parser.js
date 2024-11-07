@@ -615,14 +615,6 @@ var codeMirrorFn = function() {
                 logWarning(`Setting "${errorCase(ident)}" is an experimental Pattern:Script feature. Do not use.`,state.lineNumber);
                 return;
             }
-            // TODO check errors
-            // else if (ident == 'load_image') {
-            //     var image = new Image();
-            //     image.src = value[1];
-            //     image.crossOrigin = 'Anonymous';
-            //     image.onload = canvasResize;
-            //     window.g_image = image;
-            // }
             state.metadata.push(...value);
         }
     }
