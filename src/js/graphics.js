@@ -618,7 +618,7 @@ function redrawCellGrid(curlevel) {
     //if (!levelEditorOpened)
         setClip(render);
     if (tweening) 
-        drawObjectsTweening(render.getIter());
+        drawObjectsTweening(render);
     else drawObjects(render);
 
     // show layer no
@@ -782,7 +782,8 @@ function redrawCellGrid(curlevel) {
     }
 
     // Draw loop used when tweening
-    function drawObjectsTweening(iter) {
+    function drawObjectsTweening(render) {
+        let iter = render.getIter();
         // assume already validated
         const easing = state.metadata.tween_easing || 'linear';
         const snap = state.metadata.tween_snap || state.sprite_size;
@@ -793,6 +794,16 @@ function redrawCellGrid(curlevel) {
             var object = state.objects[state.idDict[k]];
             var layerID = object.layer;
 
+            const vector = object.vector;
+            // size of the sprite in pixels
+            const spriteSize = vector ? {
+                w: (vector.w || 1) * cellwidth,
+                h: (vector.h || 1) * cellheight,
+            } : {
+                w: object.spritematrix.reduce((acc, row) => Math.max(acc, row.length), 0) * pixelSize,
+                h: object.spritematrix.length * pixelSize,
+            };
+
             for (var i = iter[0]; i < iter[2]; i++) {
                 for (var j = iter[1]; j < iter[3]; j++) {
                     var posIndex = j + i * curlevel.height;
@@ -800,8 +811,9 @@ function redrawCellGrid(curlevel) {
                 
                     if (posMask.get(k) != 0) {                  
 
-                        var x = xoffset + (i-minMaxIJ[0]-cameraOffset.x) * cellwidth;
-                        var y = yoffset + (j-minMaxIJ[1]-cameraOffset.y) * cellheight;
+                        const drawpos = render.getDrawPos(posIndex, object);
+                        var x = drawpos.x;
+                        var y = drawpos.y;
 
                         if (currentMovedEntities && currentMovedEntities["p"+posIndex+"-l"+layerID]) {
                             var dir = currentMovedEntities["p"+posIndex+"-l"+layerID];
@@ -817,8 +829,8 @@ function redrawCellGrid(curlevel) {
                         }
                         
                         ctx.drawImage(
-                            spriteImages[k], 0, 0, cellwidth, cellheight,
-                            Math.floor(x), Math.floor(y), cellwidth, cellheight);
+                            spriteImages[k], 0, 0, spriteSize.w, spriteSize.h,
+                            Math.floor(x), Math.floor(y), spriteSize.w, spriteSize.h);
                         ctx.globalAlpha = 1;
                     }
                 }
