@@ -41,7 +41,7 @@ function createCanvasSprite(name, vector) {
     function addInstr(json) {
         for (const instr of json) {
             try {
-                for (const [key, value] of Object.entries(instr)) {
+                for (let [key, value] of Object.entries(instr)) {
                     if (key === "!include") {
                         const include = state.objects[value.toLowerCase()];
                         if (include) {
@@ -50,6 +50,23 @@ function createCanvasSprite(name, vector) {
                             logWarningNoLine("include object '" + value + "' not found");
                         }
                     } else if (context[key] instanceof Function) {
+                        // Special case for drawing images loaded with 'load_images'.
+                        if (key === 'drawImage') {
+                            const imageName = value[0];
+                            if (imageName === undefined) {
+                                logErrorNoLine(`Expected at least one argument to 'drawImage'`, true);
+                                continue;
+                            }
+                            let image = customImages[imageName];
+                            if (!image) {
+                                logErrorNoLine(`Image named '${imageName}' not found`, true);
+                                continue;
+                            }
+                            // Replace `drawImage('imageName', ...)` with `drawImage(image, ...)`.
+                            value = deepClone(value);
+                            value[0] = image;
+                        }
+
                         context[key].apply(context, value);
                     } else {
                         context[key] = value;
